@@ -13,7 +13,7 @@
     (:predicates
         (edge ?n1 ?n2 - node)
         (active ?n - orig)
-        (matched ?n - target)
+        (matched ?n - node)
         (mapping ?n1 - orig ?n2 - target)
         (morphing)
         (done)
@@ -55,8 +55,17 @@
     ; match a node
     (:action match
         :parameters (?n1 - orig ?n2 - target)
-        :precondition (and (active ?n1) (not (matched ?n2)))
-        :effect (and (matched ?n2) (mapping ?n1 ?n2) (not (morphing)))
+        :precondition (and
+            (active ?n1)
+            (not (matched ?n1))
+            (not (matched ?n2))
+        )
+        :effect (and
+            (matched ?n1)
+            (matched ?n2)
+            (mapping ?n1 ?n2)
+            (not (morphing))
+        )
     )
 
     ; check isomorphism
