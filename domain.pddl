@@ -70,8 +70,8 @@
             ; all active original nodes have a match
             (forall
                 (?n1 - orig)
-                (or
-                    (not (active ?n1))
+                (imply
+                    (active ?n1)
                     (exists
                         (?n2 - target)
                         (mapping ?n1 ?n2)))
@@ -79,11 +79,20 @@
             ; ; all edges are preserved
             (forall
                 (?n1 ?n2 - orig ?n3 ?n4 - target)
-                (or
-                    (not (edge ?n1 ?n2))
-                    (not (mapping ?n1 ?n3))
-                    (not (mapping ?n2 ?n4))
-                    (edge ?n3 ?n4))
+                (and
+                    (imply
+                        (and
+                            (edge ?n1 ?n2)
+                            (mapping ?n1 ?n3)
+                            (mapping ?n2 ?n4))
+                        (edge ?n3 ?n4))
+                    (imply
+                        (and
+                            (edge ?n3 ?n4)
+                            (mapping ?n1 ?n3)
+                            (mapping ?n2 ?n4))
+                        (edge ?n1 ?n2))
+                )
             )
         )
         :effect (done)
