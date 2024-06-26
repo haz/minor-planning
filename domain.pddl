@@ -16,6 +16,12 @@
         (matched ?n - node)
         (mapping ?n1 - orig ?n2 - target)
         (morphing)
+        (validating)
+        (queued)
+        (current-edge ?n1 ?n2 - target)
+        (NEXT ?n1 ?n2 ?n3 ?n4 - target)
+        (LAST ?n1 ?n2 - target)
+
         (done)
     )
 
@@ -57,6 +63,7 @@
         :parameters (?n1 - orig ?n2 - target)
         :precondition (and
             (active ?n1)
+            (not (validating))
             (not (matched ?n1))
             (not (matched ?n2))
         )
@@ -68,26 +75,22 @@
         )
     )
 
-    ; check isomorphism
-    (:action isomorphism
+
+    (:action start-validating
         :parameters ()
+        :precondition (not (validating))
+        :effect (validating)
+    )
+
+    (:action validate-edge
+        :parameters (?n3 ?n4 - target)
         :precondition (and
-            ; all target nodes have a match
+            (not (queued))
+            (validating)
+            (current-edge ?n3 ?n4)
+            ; edge (?n3 ?n4) is preserved
             (forall
-                (?n - target)
-                (matched ?n))
-            ; all active original nodes have a match
-            (forall
-                (?n1 - orig)
-                (imply
-                    (active ?n1)
-                    (exists
-                        (?n2 - target)
-                        (mapping ?n1 ?n2)))
-            )
-            ; ; all edges are preserved
-            (forall
-                (?n1 ?n2 - orig ?n3 ?n4 - target)
+                (?n1 ?n2 - orig)
                 (and
                     (imply
                         (and
@@ -104,7 +107,75 @@
                 )
             )
         )
+        :effect (queued)
+    )
+
+    (:action next-edge
+        :parameters (?n1 ?n2 ?n3 ?n4 - target)
+        :precondition (and
+            (queued)
+            (validating)
+            (current-edge ?n1 ?n2)
+            (NEXT ?n1 ?n2 ?n3 ?n4) ; static predicate defining a strict order on target edges
+        )
+        :effect (and
+            (not (queued))
+            (not (current-edge ?n1 ?n2))
+            (current-edge ?n3 ?n4)
+        )
+    )
+
+    (:action stop-validating
+        :parameters (?n1 ?n2 - target)
+        :precondition (and
+            (queued)
+            (validating)
+            (current-edge ?n1 ?n2)
+            (LAST ?n1 ?n2) ; static predicate defining the end of the order (could also use a conditional effect but this seems faster).
+        )
         :effect (done)
     )
+
+
+
+
+    ; check isomorphism
+    ; (:action isomorphism
+    ;     :parameters ()
+    ;     :precondition (and
+    ;         ; all target nodes have a match
+    ;         (forall
+    ;             (?n - target)
+    ;             (matched ?n))
+    ;         ; all active original nodes have a match
+    ;         (forall
+    ;             (?n1 - orig)
+    ;             (imply
+    ;                 (active ?n1)
+    ;                 (exists
+    ;                     (?n2 - target)
+    ;                     (mapping ?n1 ?n2)))
+    ;         )
+    ;         ; ; all edges are preserved
+    ;         (forall
+    ;             (?n1 ?n2 - orig ?n3 ?n4 - target)
+    ;             (and
+    ;                 (imply
+    ;                     (and
+    ;                         (edge ?n1 ?n2)
+    ;                         (mapping ?n1 ?n3)
+    ;                         (mapping ?n2 ?n4))
+    ;                     (edge ?n3 ?n4))
+    ;                 (imply
+    ;                     (and
+    ;                         (edge ?n3 ?n4)
+    ;                         (mapping ?n1 ?n3)
+    ;                         (mapping ?n2 ?n4))
+    ;                     (edge ?n1 ?n2))
+    ;             )
+    ;         )
+    ;     )
+    ;     :effect (done)
+    ; )
 
 )

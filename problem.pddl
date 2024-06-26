@@ -31,6 +31,10 @@
         (edge t1 t1)
         (edge t2 t2)
         (edge t3 t3)
+        (current-edge t1 t2)
+        (NEXT t1 t2 t2 t3)
+        (NEXT t2 t3 t3 t1)
+        (LAST t3 t1)
         (morphing)
     )
 
