@@ -21,7 +21,6 @@
         (current-edge ?n1 ?n2 - target)
         (NEXT ?n1 ?n2 ?n3 ?n4 - target)
         (LAST ?n1 ?n2 - target)
-
         (done)
     )
 
@@ -75,10 +74,16 @@
         )
     )
 
+    ; Validation takes the place of computing isomorphism in a single action
 
     (:action start-validating
         :parameters ()
-        :precondition (not (validating))
+        :precondition (and
+            (not (validating))
+            (forall
+                (?n - target)
+                (matched ?n))
+        )
         :effect (validating)
     )
 
@@ -131,51 +136,10 @@
             (queued)
             (validating)
             (current-edge ?n1 ?n2)
-            (LAST ?n1 ?n2) ; static predicate defining the end of the order (could also use a conditional effect but this seems faster).
+            (LAST ?n1 ?n2) ; static predicate defining the end of the order
         )
         :effect (done)
     )
 
-
-
-
-    ; check isomorphism
-    ; (:action isomorphism
-    ;     :parameters ()
-    ;     :precondition (and
-    ;         ; all target nodes have a match
-    ;         (forall
-    ;             (?n - target)
-    ;             (matched ?n))
-    ;         ; all active original nodes have a match
-    ;         (forall
-    ;             (?n1 - orig)
-    ;             (imply
-    ;                 (active ?n1)
-    ;                 (exists
-    ;                     (?n2 - target)
-    ;                     (mapping ?n1 ?n2)))
-    ;         )
-    ;         ; ; all edges are preserved
-    ;         (forall
-    ;             (?n1 ?n2 - orig ?n3 ?n4 - target)
-    ;             (and
-    ;                 (imply
-    ;                     (and
-    ;                         (edge ?n1 ?n2)
-    ;                         (mapping ?n1 ?n3)
-    ;                         (mapping ?n2 ?n4))
-    ;                     (edge ?n3 ?n4))
-    ;                 (imply
-    ;                     (and
-    ;                         (edge ?n3 ?n4)
-    ;                         (mapping ?n1 ?n3)
-    ;                         (mapping ?n2 ?n4))
-    ;                     (edge ?n1 ?n2))
-    ;             )
-    ;         )
-    ;     )
-    ;     :effect (done)
-    ; )
 
 )
